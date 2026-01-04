@@ -6,96 +6,98 @@
     <title>The Halal Korea</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HalalKorea">
-    
+    <meta name="apple-mobile-web-app-title" content="Halal Korea">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+
     <style>
-        /* ... garde ton style actuel ... */
         :root { --primary-color: #2e7d32; }
-        body { margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; }
-        #map { height: 100vh; width: 100vw; }
+        body { margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; z-index: 1; }
+        
         .header-info {
-            position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+            position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
             z-index: 1000; background: white; padding: 12px 20px;
             border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            font-weight: bold; width: 80%; text-align: center; color: var(--primary-color);
+            font-weight: bold; width: 75%; text-align: center; 
+            border: 2px solid var(--primary-color); color: var(--primary-color);
+        }
+
+        .locate-btn {
+            position: absolute; bottom: 40px; right: 20px; z-index: 1000;
+            background: white; width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 28px; 
+            border: none; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div class="header-info">🕌 The Halal Korea</div>
+    <div class="header-info">🇰🇷 The Halal Korea</div>
     <div id="map"></div>
     <button class="locate-btn" onclick="findMe()">📍</button>
 
     <script>
-        // Initialisation de la carte
+        // 1. Initialisation de la carte
         var map = L.map('map', { zoomControl: false }).setView([37.5665, 126.9780], 12);
 
-        // Design de la carte (Clair et moderne)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '©OpenStreetMap'
         }).addTo(map);
 
-        // Liste des lieux de départ
-        var locations = [
-            { name: "Grande Mosquée de Séoul", lat: 37.5332, lng: 126.9977, type: "Mosquée", info: "Itaewon" },
-            { name: "Lotte World Prayer Room", lat: 37.5111, lng: 127.0982, type: "Prière", info: "3ème étage" }
-        ];
-
-        // Icône personnalisée verte
+        // 2. Icônes personnalisées
         var greenIcon = new L.Icon({
           iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
           iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
         });
 
-        // Ajouter les marqueurs
+        var blueIcon = new L.Icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        // 3. Liste des lieux (On pourra en ajouter d'autres ici)
+        var locations = [
+            { name: "Grande Mosquée de Séoul", lat: 37.5332, lng: 126.9977, type: "Mosquée", info: "Itaewon" },
+            { name: "Lotte World Prayer Room", lat: 37.5111, lng: 127.0982, type: "Prière", info: "3ème étage" },
+            { name: "Busan Al-Fatah Mosque", lat: 35.2384, lng: 129.0918, type: "Mosquée", info: "Busan" },
+        ];
+
         locations.forEach(function(place) {
             L.marker([place.lat, place.lng], {icon: greenIcon}).addTo(map)
              .bindPopup(`<b>${place.name}</b><br>${place.type}<br><small>${place.info}</small>`);
         });
 
-           // Fonction pour localiser l'utilisateur
+        // 4. Système de Géolocalisation
+        var userMarker;
+        var userCircle;
+
         function findMe() {
-            // "watch: true" permet de suivre tes déplacements si tu marches
-            map.locate({setView: true, maxZoom: 16, watch: false});
+            map.locate({setView: true, maxZoom: 16});
         }
 
-        // Variable pour stocker le marqueur de position (pour éviter d'en créer 100)
-        var userMarker;
-
         map.on('locationfound', function(e) {
-            // Si le marqueur existe déjà, on le déplace juste
-            if (userMarker) {
-                userMarker.setLatLng(e.latlng);
-            } else {
-                // Sinon, on crée un marqueur bleu spécial pour l'utilisateur
-                var userIcon = L.icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-                });
-                userMarker = L.marker(e.latlng, {icon: userIcon}).addTo(map)
-                             .bindPopup("<b>Vous êtes ici !</b>").openPopup();
-            }
+            // Supprimer l'ancienne position avant d'afficher la nouvelle
+            if (userMarker) { map.removeLayer(userMarker); }
+            if (userCircle) { map.removeLayer(userCircle); }
+
+            userMarker = L.marker(e.latlng, {icon: blueIcon}).addTo(map)
+                         .bindPopup("<b>Vous êtes ici</b>").openPopup();
             
-            // On ajoute un petit cercle bleu clair autour pour la précision
-            L.circle(e.latlng, e.accuracy, {
-                color: '#1e88e5',
-                fillColor: '#1e88e5',
-                fillOpacity: 0.15,
-                weight: 1
+            userCircle = L.circle(e.latlng, e.accuracy, {
+                color: '#1e88e5', fillColor: '#1e88e5', fillOpacity: 0.1, weight: 1
             }).addTo(map);
         });
 
         map.on('locationerror', function() {
-            alert("Oups ! Je n'ai pas pu accéder à votre position. Vérifiez que la localisation est activée sur votre téléphone.");
+            alert("Localisation non disponible. Vérifie tes paramètres.");
         });
     </script>
 </body>
