@@ -5,18 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Halal Korea</title>
     
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="app.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2972/2972531.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Halal Korea">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="The Halal Korea">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         :root { --primary-color: #2e7d32; }
-        body { margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; }
+        body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; }
+        
+        /* Une seule carte qui prend tout l'écran */
         #map { height: 100vh; width: 100vw; z-index: 1; }
         
         .header-info {
@@ -43,62 +45,45 @@
     <button class="locate-btn" onclick="findMe()">📍</button>
 
     <script>
-        // 1. Initialisation de la carte
+        // INITIALISATION UNIQUE DE LA CARTE
         var map = L.map('map', { zoomControl: false }).setView([37.5665, 126.9780], 12);
 
+        // Design de la carte (propre et clair)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '©OpenStreetMap'
         }).addTo(map);
 
-        // 2. Icônes personnalisées
+        // Icônes
         var greenIcon = new L.Icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
         });
 
         var blueIcon = new L.Icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-          iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
         });
 
-        // 3. Liste des lieux (On pourra en ajouter d'autres ici)
-        var locations = [
-            { name: "Grande Mosquée de Séoul", lat: 37.5332, lng: 126.9977, type: "Mosquée", info: "Itaewon" },
-            { name: "Lotte World Prayer Room", lat: 37.5111, lng: 127.0982, type: "Prière", info: "3ème étage" },
-            { name: "Busan Al-Fatah Mosque", lat: 35.2384, lng: 129.0918, type: "Mosquée", info: "Busan" },
-        ];
-
-        locations.forEach(function(place) {
-            L.marker([place.lat, place.lng], {icon: greenIcon}).addTo(map)
-             .bindPopup(`<b>${place.name}</b><br>${place.type}<br><small>${place.info}</small>`);
-        });
-
-        // 4. Système de Géolocalisation
-        var userMarker;
-        var userCircle;
+        // GEOLOCALISATION
+        var userMarker, userCircle;
 
         function findMe() {
             map.locate({setView: true, maxZoom: 16});
         }
 
         map.on('locationfound', function(e) {
-            // Supprimer l'ancienne position avant d'afficher la nouvelle
             if (userMarker) { map.removeLayer(userMarker); }
             if (userCircle) { map.removeLayer(userCircle); }
-
-            userMarker = L.marker(e.latlng, {icon: blueIcon}).addTo(map)
-                         .bindPopup("<b>Vous êtes ici</b>").openPopup();
-            
-            userCircle = L.circle(e.latlng, e.accuracy, {
-                color: '#1e88e5', fillColor: '#1e88e5', fillOpacity: 0.1, weight: 1
-            }).addTo(map);
+            userMarker = L.marker(e.latlng, {icon: blueIcon}).addTo(map).bindPopup("Vous êtes ici");
+            userCircle = L.circle(e.latlng, e.accuracy, { color: '#1e88e5', weight: 1 }).addTo(map);
         });
 
-        map.on('locationerror', function() {
-            alert("Localisation non disponible. Vérifie tes paramètres.");
-        });
+        // EXEMPLE DE LIEU (on en ajoutera d'autres après)
+        L.marker([37.5332, 126.9977], {icon: greenIcon}).addTo(map)
+         .bindPopup("<b>Grande Mosquée de Séoul</b><br>Itaewon");
+
     </script>
 </body>
 </html>
